@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	gadget "github.com/openstadia/go-usb-gadget"
-	o "github.com/openstadia/go-usb-gadget/option"
+	gadget "github.com/ardelean-calin/go-usb-gadget"
+	o "github.com/ardelean-calin/go-usb-gadget/option"
 	"log"
 	"time"
 )

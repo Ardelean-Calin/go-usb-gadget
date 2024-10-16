@@ -2,7 +2,7 @@ package gadget
 
 import (
 	"fmt"
-	o "github.com/openstadia/go-usb-gadget/option"
+	o "github.com/ardelean-calin/go-usb-gadget/option"
 	"log"
 	"os"
 	"path/filepath"

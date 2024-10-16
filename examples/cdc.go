@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/openstadia/go-usb-gadget"
-	o "github.com/openstadia/go-usb-gadget/option"
+	"github.com/ardelean-calin/go-usb-gadget"
+	o "github.com/ardelean-calin/go-usb-gadget/option"
 )
 
 func cdc() {

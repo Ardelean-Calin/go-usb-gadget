@@ -1,3 +1,3 @@
-module github.com/openstadia/go-usb-gadget
+module github.com/ardelean-calin/go-usb-gadget
 
-go 1.21.0
+go 1.22.6
