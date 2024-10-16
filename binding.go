@@ -19,8 +19,6 @@ func CreateBinding(c *Config, f Function, name string) (*Binding, error) {
 	configPath := filepath.Join(c.path, c.name)
 	linkPath := filepath.Join(configPath, name)
 
-	fmt.Println(functionPath, linkPath)
-
 	binding := &Binding{
 		name:     name,
 		path:     configPath,
