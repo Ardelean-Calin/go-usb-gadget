@@ -2,10 +2,10 @@ package gadget
 
 import (
 	"fmt"
-	o "github.com/ardelean-calin/go-usb-gadget/option"
-	"log"
 	"os"
 	"path/filepath"
+
+	o "github.com/ardelean-calin/go-usb-gadget/option"
 )
 
 const BasePath = "/sys/kernel/config/usb_gadget"
@@ -38,7 +38,7 @@ type GadgetStrs struct {
 	Product      string
 }
 
-func CreateGadget(name string) *Gadget {
+func CreateGadget(name string) (*Gadget, error) {
 	path := filepath.Join(BasePath, name)
 
 	gadget := &Gadget{
@@ -48,10 +48,10 @@ func CreateGadget(name string) *Gadget {
 
 	err := os.Mkdir(path, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
-		log.Fatal(err)
+		return nil, fmt.Errorf("cannot create gadget: %w", err)
 	}
 
-	return gadget
+	return gadget, nil
 }
 
 func (g *Gadget) Enable(udc string) {
@@ -98,18 +98,20 @@ func (g *Gadget) SetAttrs(attrs *GadgetAttrs) {
 	}
 }
 
-func (g *Gadget) SetStrs(strs *GadgetStrs, lang int) {
+func (g *Gadget) SetStrs(strs *GadgetStrs, lang int) error {
 	langStr := fmt.Sprintf("0x%x", lang)
 	path := filepath.Join(g.path, g.name, StringsDir, langStr)
 
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("cannot set strings: %w", err)
 	}
 
 	WriteString(path, "", "serialnumber", strs.SerialNumber)
 	WriteString(path, "", "manufacturer", strs.Manufacturer)
 	WriteString(path, "", "product", strs.Product)
+
+	return nil
 }
 
 func (g *Gadget) writeHex16(file string, value uint16) {

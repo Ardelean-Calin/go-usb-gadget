@@ -2,10 +2,10 @@ package gadget
 
 import (
 	"fmt"
-	o "github.com/ardelean-calin/go-usb-gadget/option"
-	"log"
 	"os"
 	"path/filepath"
+
+	o "github.com/ardelean-calin/go-usb-gadget/option"
 )
 
 const DefaultConfigLabel = "config"
@@ -30,7 +30,7 @@ type ConfigStrs struct {
 	Configuration string
 }
 
-func CreateConfig(gadget *Gadget, label string, id int) *Config {
+func CreateConfig(gadget *Gadget, label string, id int) (*Config, error) {
 	path := filepath.Join(gadget.path, gadget.name, ConfigsDir)
 	name := fmt.Sprintf("%s.%d", label, id)
 
@@ -44,12 +44,12 @@ func CreateConfig(gadget *Gadget, label string, id int) *Config {
 
 	err := os.MkdirAll(filepath.Join(path, name), os.ModePerm)
 	if err != nil && !os.IsExist(err) {
-		log.Fatal(err)
+		return nil, fmt.Errorf("cannot create config: %w", err)
 	}
 
 	gadget.configs = append(gadget.configs, config)
 
-	return config
+	return config, nil
 }
 
 func (c *Config) SetAttrs(attrs *ConfigAttrs) {
@@ -62,14 +62,15 @@ func (c *Config) SetAttrs(attrs *ConfigAttrs) {
 	}
 }
 
-func (c *Config) SetStrs(strs *ConfigStrs, lang int) {
+func (c *Config) SetStrs(strs *ConfigStrs, lang int) error {
 	langStr := fmt.Sprintf("0x%x", lang)
 	path := filepath.Join(c.path, c.name, StringsDir, langStr)
 
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("cannot set strings: %w", err)
 	}
 
 	WriteString(path, "", "configuration", strs.Configuration)
+	return nil
 }

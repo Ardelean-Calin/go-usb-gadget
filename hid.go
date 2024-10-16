@@ -3,7 +3,6 @@ package gadget
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -33,7 +32,7 @@ type HidFunctionAttrs struct {
 	ReportDesc   []byte
 }
 
-func CreateHidFunction(gadget *Gadget, instance string) *HidFunction {
+func CreateHidFunction(gadget *Gadget, instance string) (*HidFunction, error) {
 	basePath := filepath.Join(gadget.Path(), gadget.Name(), FunctionsDir)
 	name := fmt.Sprintf("%s.%s", HidFunctionTypeName, instance)
 	path := filepath.Join(basePath, name)
@@ -48,10 +47,10 @@ func CreateHidFunction(gadget *Gadget, instance string) *HidFunction {
 
 	err := os.Mkdir(path, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
-		log.Fatal(err)
+		return nil, fmt.Errorf("cannot create HID function: %w", err)
 	}
 
-	return function
+	return function, nil
 }
 
 func (h *HidFunction) SetAttrs(attrs *HidFunctionAttrs) {
@@ -73,11 +72,11 @@ func (h *HidFunction) GetReadWriter() (*bufio.ReadWriter, error) {
 	return bufio.NewReadWriter(reader, writer), nil
 }
 
-func (h *HidFunction) GetDev() string {
+func (h *HidFunction) GetDev() (string, error) {
 	path := filepath.Join(h.path, h.name, "dev")
 	data, err := os.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		return "", fmt.Errorf("cannot get device: %w", err)
 	}
-	return string(data)
+	return string(data), nil
 }

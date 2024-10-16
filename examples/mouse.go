@@ -4,14 +4,18 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
-	gadget "github.com/ardelean-calin/go-usb-gadget"
-	o "github.com/ardelean-calin/go-usb-gadget/option"
 	"log"
 	"time"
+
+	gadget "github.com/ardelean-calin/go-usb-gadget"
+	o "github.com/ardelean-calin/go-usb-gadget/option"
 )
 
 func main() {
-	g := gadget.CreateGadget("my_hid")
+	g, err := gadget.CreateGadget("my_hid")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	g.SetAttrs(&gadget.GadgetAttrs{
 		BcdUSB:          o.Some[uint16](0x0200),
@@ -30,7 +34,10 @@ func main() {
 		Product:      "iSticktoit.net USB Device",
 	}, gadget.LangUsEng)
 
-	c := gadget.CreateConfig(g, "c", 1)
+	c, err := gadget.CreateConfig(g, "c", 1)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	c.SetAttrs(&gadget.ConfigAttrs{
 		BmAttributes: o.None[uint8](),
@@ -41,7 +48,11 @@ func main() {
 		Configuration: "Config 1: ECM network",
 	}, gadget.LangUsEng)
 
-	hidFunction := gadget.CreateHidFunction(g, "usb0")
+	hidFunction, err := gadget.CreateHidFunction(g, "usb0")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	hidFunction.SetAttrs(&gadget.HidFunctionAttrs{
 		Subclass:     0,
 		Protocol:     0,
@@ -49,7 +60,10 @@ func main() {
 		ReportDesc:   ReportDesc,
 	})
 
-	b := gadget.CreateBinding(c, hidFunction, hidFunction.Name())
+	b, err := gadget.CreateBinding(c, hidFunction, hidFunction.Name())
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(b)
 
 	udcs := gadget.GetUdcs()

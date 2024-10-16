@@ -2,7 +2,6 @@ package gadget
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -15,7 +14,7 @@ type Binding struct {
 	function Function
 }
 
-func CreateBinding(c *Config, f Function, name string) *Binding {
+func CreateBinding(c *Config, f Function, name string) (*Binding, error) {
 	functionPath := filepath.Join(f.Path(), f.Name())
 	configPath := filepath.Join(c.path, c.name)
 	linkPath := filepath.Join(configPath, name)
@@ -31,8 +30,8 @@ func CreateBinding(c *Config, f Function, name string) *Binding {
 
 	err := os.Symlink(functionPath, linkPath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("cannot create binding: %w", err)
 	}
 
-	return binding
+	return binding, nil
 }
