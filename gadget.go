@@ -19,9 +19,8 @@ type Gadget struct {
 
 	enabled bool
 
-	configs   []*Config
-	functions []Function
-	strings   []string
+	configs []*Config
+	strings []string
 }
 
 type GadgetAttrs struct {
@@ -151,6 +150,7 @@ func (g *Gadget) CleanUp() error {
 		g.Disable()
 	}
 
+	var funcs []Function
 	for _, c := range g.configs {
 		// 1. Remove functions from configurations (aka the symlinks)
 		for _, b := range c.bindings {
@@ -159,6 +159,7 @@ func (g *Gadget) CleanUp() error {
 			if err != nil {
 				return fmt.Errorf("cannot unlink %q: %w", linkPath, err)
 			}
+			funcs = append(funcs, b.function)
 			fmt.Printf("Removed symlink: %s\n", linkPath)
 		}
 		// 2. Remove strings directories in configurations
@@ -178,7 +179,7 @@ func (g *Gadget) CleanUp() error {
 	}
 
 	// 4. Remove the functions
-	for _, f := range g.functions {
+	for _, f := range funcs {
 		err := os.RemoveAll(f.Path())
 		if err != nil {
 			return fmt.Errorf("cannot remove function %q: %w", f, err)

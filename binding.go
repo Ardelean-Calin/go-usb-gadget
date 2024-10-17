@@ -31,5 +31,7 @@ func CreateBinding(c *Config, f Function, name string) (*Binding, error) {
 		return nil, fmt.Errorf("cannot create binding: %w", err)
 	}
 
+	c.bindings = append(c.bindings, binding)
+
 	return binding, nil
 }
