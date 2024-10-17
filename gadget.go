@@ -17,8 +17,11 @@ type Gadget struct {
 	name string
 	udc  string
 
+	enabled bool
+
 	configs   []*Config
 	functions []Function
+	strings   []string
 }
 
 type GadgetAttrs struct {
@@ -57,11 +60,13 @@ func CreateGadget(name string) (*Gadget, error) {
 func (g *Gadget) Enable(udc string) {
 	WriteString(g.path, g.name, "UDC", udc)
 	g.udc = udc
+	g.enabled = true
 }
 
 func (g *Gadget) Disable() {
 	WriteString(g.path, g.name, "UDC", "\n")
 	g.udc = ""
+	g.enabled = false
 }
 
 func (g *Gadget) SetAttrs(attrs *GadgetAttrs) {
@@ -106,6 +111,7 @@ func (g *Gadget) SetStrs(strs *GadgetStrs, lang int) error {
 	if err != nil {
 		return fmt.Errorf("cannot set strings: %w", err)
 	}
+	g.strings = append(g.strings, path)
 
 	WriteString(path, "", "serialnumber", strs.SerialNumber)
 	WriteString(path, "", "manufacturer", strs.Manufacturer)
@@ -132,4 +138,66 @@ func (g *Gadget) Path() string {
 
 func (g *Gadget) Name() string {
 	return g.name
+}
+
+func (g *Gadget) IsEnabled() bool {
+	return g.enabled
+}
+
+// CleanUp cleans up the USB gadget
+func (g *Gadget) CleanUp() error {
+	// We need to disable it first
+	if g.IsEnabled() {
+		g.Disable()
+	}
+
+	for _, c := range g.configs {
+		// 1. Remove functions from configurations (aka the symlinks)
+		for _, b := range c.bindings {
+			linkPath := filepath.Join(b.config.path, b.name)
+			fmt.Printf("Removing symlink: %s\n", linkPath)
+			err := os.Remove(linkPath)
+			if err != nil {
+				return fmt.Errorf("cannot unlink %q: %w", linkPath, err)
+			}
+		}
+		// 2. Remove strings directories in configurations
+		for _, path := range c.strings {
+			err := os.RemoveAll(path)
+			if err != nil {
+				return fmt.Errorf("cannot remove strings %q: %w", path, err)
+			}
+		}
+		// 3. Remove the configurations
+		err := os.RemoveAll(c.path)
+		if err != nil {
+			return fmt.Errorf("cannot remove configuration %q: %w", c.name, err)
+		}
+	}
+
+	// 4. Remove the functions
+	for _, f := range g.functions {
+		err := os.RemoveAll(f.Path())
+		if err != nil {
+			return fmt.Errorf("cannot remove function %q: %w", f, err)
+		}
+	}
+
+	// 5. Remove strings directories in the gadget
+	for _, s := range g.strings {
+		err := os.RemoveAll(s)
+		if err != nil {
+			return fmt.Errorf("cannot remove gadget string %q: %w", s, err)
+		}
+	}
+
+	// 6. Remove the gadget
+	err := os.RemoveAll(g.path)
+	if err != nil {
+		return fmt.Errorf("cannot remove gadget %q: %w", g.name, err)
+	}
+
+	fmt.Printf("Successfully removed gadget %q", g.name)
+
+	return nil
 }

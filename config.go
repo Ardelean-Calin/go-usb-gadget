@@ -19,6 +19,7 @@ type Config struct {
 
 	gadget   *Gadget
 	bindings []*Binding
+	strings  []string
 }
 
 type ConfigAttrs struct {
@@ -70,6 +71,7 @@ func (c *Config) SetStrs(strs *ConfigStrs, lang int) error {
 	if err != nil {
 		return fmt.Errorf("cannot set strings: %w", err)
 	}
+	c.strings = append(c.strings, path)
 
 	WriteString(path, "", "configuration", strs.Configuration)
 	return nil
