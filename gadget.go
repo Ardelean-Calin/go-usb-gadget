@@ -155,11 +155,11 @@ func (g *Gadget) CleanUp() error {
 		// 1. Remove functions from configurations (aka the symlinks)
 		for _, b := range c.bindings {
 			linkPath := filepath.Join(b.config.path, b.name)
-			fmt.Printf("Removing symlink: %s\n", linkPath)
 			err := os.Remove(linkPath)
 			if err != nil {
 				return fmt.Errorf("cannot unlink %q: %w", linkPath, err)
 			}
+			fmt.Printf("Removed symlink: %s\n", linkPath)
 		}
 		// 2. Remove strings directories in configurations
 		for _, path := range c.strings {
@@ -167,12 +167,14 @@ func (g *Gadget) CleanUp() error {
 			if err != nil {
 				return fmt.Errorf("cannot remove strings %q: %w", path, err)
 			}
+			fmt.Printf("Removed config strings: %s\n", path)
 		}
 		// 3. Remove the configurations
 		err := os.RemoveAll(c.path)
 		if err != nil {
 			return fmt.Errorf("cannot remove configuration %q: %w", c.name, err)
 		}
+		fmt.Printf("Removed configuration: %s\n", c.path)
 	}
 
 	// 4. Remove the functions
@@ -181,6 +183,7 @@ func (g *Gadget) CleanUp() error {
 		if err != nil {
 			return fmt.Errorf("cannot remove function %q: %w", f, err)
 		}
+		fmt.Printf("Removed function: %s\n", f.Path())
 	}
 
 	// 5. Remove strings directories in the gadget
@@ -189,6 +192,7 @@ func (g *Gadget) CleanUp() error {
 		if err != nil {
 			return fmt.Errorf("cannot remove gadget string %q: %w", s, err)
 		}
+		fmt.Printf("Removed strings: %s\n", s)
 	}
 
 	// 6. Remove the gadget
